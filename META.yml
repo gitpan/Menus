@@ -1,0 +1,14 @@
+---
+name: Menus
+version: 1
+author:
+  - Brian Kelly <Brian.Kelly@fullautosoftware.net>
+abstract: Create Powerful CMD Enviroment Menus
+license: gpl
+requires:
+  perl: 5.002
+provides:
+  Menus:
+    file: lib/Menus.pm
+    version: 1
+generated_by: Module::Build version 0.261

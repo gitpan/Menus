@@ -1,0 +1,845 @@
+NAME
+    Menus - Create Powerful CMD Enviroment Menus
+
+SYNOPSIS
+    "use Menus ();"
+
+    see METHODS section below
+
+DESCRIPTION
+    Menus.pm allows you to create powerful CMD environment menus. Any CMD
+    enviroment perl script can now include a menu facility that includes
+    sub-menus, forward and backward navigation, single or multiple selection
+    capabilities, dynamic item creation and customized banners. All this
+    power is simple to implement with a straight forward and very intuitive
+    configuration hash structure that mirrors the actual menu architechture
+    needed by the application. A separate configuration file is optional.
+
+    Menus.pm is a stand-alone module and will work with any perl script -
+    other CPAN modules are not needed for its implementation.
+
+    Menus.pm was initially conceived and designed to work seemlessly with
+    the soon-to-be-released perl based Network Automation Utility called
+    FullAuto - however, it is not itself dependant on other FullAuto
+    components, and will work with *any* perl script/application.
+
+    Reasons to use this module are:
+
+    * You have a list (or array) of items, and wish to present the user a
+      simple CMD enviroment menu to pick a single item and return that item
+      as a scalar (or simple string). Example:
+
+         use Menus;
+
+         my @list=('First Item','Second Item','Third Item');
+         my $banner="   Please pick an item:";
+         my $selection=&pick(\@list,$banner);
+         print "SELECTION = $selection\n";
+
+      The user sees ==>
+
+         Please pick an item:
+
+            1.        First Item
+            2.        Second Item
+            3.        Third Item
+
+         (Press "q" to quit)
+
+         PLEASE ENTER A NUMBER:
+
+      --< 2 >-<ENTER>----------------------------------
+
+      The user sees ==>
+
+         SELECTION = Second Item
+
+    * You have a large list of items and need scrolling capability:
+
+         use Menus;
+
+         my @list=`ls -1 /bin`;
+         my $banner="   Please pick an item:";
+         my $selection=&pick(\@list,$banner);
+         print "SELECTION = $selection\n";
+
+      The user sees ==>
+
+         Please pick an item:
+
+            1.        arch
+            2.        ash
+            3.        awk
+            4.        basename
+            5.        bash
+            6.        cat
+            7.        chgrp
+            8.        chmod
+            9.        chown
+            10.       cp
+
+         93 Total Choices
+
+         Press ENTER (or "d") to scroll downward
+
+         OR "u" to scroll upward  (Press "q" to quit)
+
+         PLEASE ENTER A NUMBER:
+
+      --<ENTER>--------------------------------------
+
+         Please pick an item:
+
+            11.       cpio
+            12.       csh
+            13.       cut
+            14.       date
+            15.       dd
+            16.       df
+            17.       echo
+            18.       ed
+            19.       egrep
+            20.       env
+
+         93 Total Choices
+
+         Press ENTER (or "d") to scroll downward
+
+         OR "u" to scroll upward  (Press "q" to quit)
+
+         PLEASE ENTER A NUMBER:
+
+      --< 14 >-<ENTER>----------------------------------
+
+      The user sees ==>
+
+         SELECTION = date
+
+    * You need to select multiple items and return the selected list:
+
+         use Menus;
+
+         my @list=`ls -1 /bin`;
+         my %Menu_1=(
+
+            Item_1 => {
+
+               Text    => "/bin Utility - ]Convey[",
+               Convey  => [ `ls -1 /bin` ],
+
+            },
+
+            Select => 'Many',
+            Banner => "\n   Choose a /bin Utility :"
+         );
+
+         my @selections=&Menu(\%Menu_1);
+         print "SELECTIONS = @selections\n";
+
+      The user sees ==>
+
+         Choose a /bin Utility :
+
+            1.        /bin Utility - arch
+            2.        /bin Utility - ash
+            3.        /bin Utility - awk
+            4.        /bin Utility - basename
+            5.        /bin Utility - bash
+            6.        /bin Utility - cat
+            7.        /bin Utility - chgrp
+            8.        /bin Utility - chmod
+            9.        /bin Utility - chown
+            10.       /bin Utility - cp
+            f.        Finish selection.
+
+         93 Total Choices
+
+         Press ENTER (or "d") to scroll downward
+
+         OR "u" to scroll upward  (Press "q" to quit)
+
+         PLEASE ENTER A NUMBER:
+
+      --< 3 >-<ENTER>----------------------------------
+
+      --< 7 >-<ENTER>----------------------------------
+
+      The user sees ==>
+
+         Choose a /bin Utility :
+
+            1.        /bin Utility - arch
+            2.        /bin Utility - ash
+         *  3.        /bin Utility - awk
+            4.        /bin Utility - basename
+            5.        /bin Utility - bash
+            6.        /bin Utility - cat
+         *  7.        /bin Utility - chgrp
+            8.        /bin Utility - chmod
+            9.        /bin Utility - chown
+            10.       /bin Utility - cp
+            c.        Clear all selections.
+            f.        Finish selection.
+
+         93 Total Choices
+
+         Press ENTER (or "d") to scroll downward
+
+         OR "u" to scroll upward  (Press "q" to quit)
+
+         PLEASE ENTER A NUMBER:
+
+      --< f >-<ENTER>----------------------------------
+
+      The user sees ==>
+
+         SELECTIONS = /bin Utility - awk /bin Utility - chgrp
+
+    * You need sub-menus:
+
+      (Note: Only one level of sub-menus are supported in Version 1.0 - more
+      *may* work - but thorough testing has not been done - proceed at your
+      own risk!)
+
+         use Menus;
+
+         my %Menu_2=(
+
+            Label  => 'Menu_2',
+            Item_1 => {
+
+               Text   => "]Previous[ is a ]Convey[ Utility",
+               Convey => [ 'Good','Bad' ]
+            },
+
+            Select => 'One',
+            Banner => "\n   Choose an Answer :"
+         );
+
+         my %Menu_1=(
+
+            Label  => 'Menu_1',
+            Item_1 => {
+
+               Text   => "/bin/Utility - ]Convey[",
+               Convey => [ `ls -1 /bin` ],
+               Result => \%Menu_2,
+
+            },
+
+            Select => 'One',
+            Banner => "\n   Choose a /bin Utility :"
+         );
+
+         my @selections=&Menu(\%Menu_1);
+         print "SELECTIONS=@selections\n";
+
+      The user sees ==>
+
+         Choose a /bin Utility :
+
+            1.        /bin Utility - arch
+            2.        /bin Utility - ash
+            3.        /bin Utility - awk
+            4.        /bin Utility - basename
+            5.        /bin Utility - bash
+            6.        /bin Utility - cat
+            7.        /bin Utility - chgrp
+            8.        /bin Utility - chmod
+            9.        /bin Utility - chown
+            10.       /bin Utility - cp
+            f.        Finish selection.
+
+         93 Total Choices
+
+         Press ENTER (or "d") to scroll downward
+
+         OR "u" to scroll upward  (Press "q" to quit)
+
+         PLEASE ENTER A NUMBER:
+
+      --< 5 >-<ENTER>----------------------------------
+
+         Choose an Answer :
+
+            1.        bash is a Good Utility
+            2.        bash is a Bad Utility
+
+         (Press "q" to quit)
+
+         PLEASE ENTER A NUMBER:
+
+      --< 1 >-<ENTER>----------------------------------
+
+      The user sees ==>
+
+         SELECTIONS = bash is a Good Utility
+
+    More examples are in the EXAMPLES section below.
+
+    Usage questions should be directed to the Usenet newsgroup
+    comp.lang.perl.modules.
+
+    Contact me, Brian Kelly <Brian.Kelly@fullautosoftware.net>, if you find
+    any bugs or have suggestions for improvements.
+
+  What To Know Before Using
+    * There are two methods available with Menus.pm - &pick() and &Menu().
+      &Menu() uses &pick() - you can get the same results using only
+      &Menu(). However, if you need to simply pick one item from a single
+      list - use &pick(). The syntax is simpler, and you'll write less code.
+      ;-)
+
+    * You'll need to be running at least Perl version 5.002 to use this
+      module. This module does not require any libraries that don't already
+      come with a standard Perl distribution.
+
+METHODS
+    pick - create a simple menu
+            $pick = &pick ($list|\@list|['list',...],[$Banner]);
+
+        Where *$list* is a variable containing a array or list reference.
+        This argument can also be a escaped array (sending a reference) or
+        an anonymous array (which also sends a reference).
+
+        *$Banner* is an optional argument sending a customized Banner to top
+        the simple menu - giving instructions, descriptions, etc. The
+        default is "Please Pick an Item:"
+
+    Menu - create a complex Menu
+            $pick  = &Menu ($list|\@list|['list',...],[$Banner]);
+
+        Where *$pick* is a variable containing a array or list reference of
+        the pick or picks.
+
+            @picks = &Menu ($Menu_1|\%Menu_1|{ Label => 'Menu_1' });
+
+        Where *$Menu_1* is a hash reference to the top level Menu
+        Configuration Hash Structure.
+
+  Menu Configuration Hash Structures
+        These are the building blocks of the overall Menu architecture. Each
+        hash structure represents a *Menu screen*. A single menu layer, has
+        only one hash structure defining it. A menu with a single sub-menu
+        will have two hash structures. The menus connect via the "Result"
+        element of an *Item* - "Item_1" - hash structure in parent menu
+        %Menu_1:
+
+           my %Menu_2=(
+
+              Label  => 'Menu_2',
+              Item_1 => {
+
+                 Text   => "]Previous[ is a ]Convey[ Utility",
+                 Convey => [ 'Good','Bad' ]
+              },
+
+              Select => 'One',
+              Banner => "\n   Choose an Answer :"
+           );
+
+           my %Menu_1=(
+
+              Label  => 'Menu_1',
+              Item_1 => {
+
+                 Text   => "/bin/Utility - ]Convey[",
+                 Convey => [ `ls -1 /bin` ],
+                 Result => \%Menu_2,
+
+              },
+
+              Select => 'One',
+              Banner => "\n   Choose a /bin Utility :"
+           );
+
+   Menu Component Elements
+    Each Menu Configuration Hash Structure consists of elements that define
+    and control it's behavior, appearance, constitution and purpose. An
+    element's syntax is as you would expect it to be in perl - a key string
+    pointing to an assocaited value: "key => value". The following items
+    list supported key names and ther associated value types:
+
+    *   Display => 'Integer'
+
+    *
+
+        * The *Display* key is an *optional* key that determines the number
+          of Menu Items that will be displayed on each screen. This is
+          useful when the items are multi-lined, or the screen size is
+          bigger or smaller than the default number utilizes in the most
+          practical fashion. The default number is 10.
+
+             Display => 15,
+
+    *   Label => 'Char String consisting of ASCII Characters'
+
+    *
+
+        * The *Label* key provides a unique identifier to each Menu
+          Structure. *Every Menu Configuration Hash Structure must have a
+          valid and unique Label element* Otherwise Menus.pm will throw an
+          error.
+
+             Label => 'Menu_1',
+
+    *   Item_<int> => { Item Configuration Hash Structure }
+
+    *
+    *   The *Item_<int>* elements define customized Menu items. There are
+        essentially two methods for creating Menu items: The *Item_<int>*
+        elements, and the "]Convey[" macro (described later). The difference
+        being that the "]Convey[" macro turns an Item Conguration Hash into
+        an Item *Template* -> a powerful way to *Item*-ize large lists or
+        quantities of data that would otherwise be difficult - even
+        impossible - to anticipate and cope with manually.
+
+           Item_1 => { Text => 'Item 1' },
+           Item_2 => { Text => 'Item 2' },
+
+        Items created via "]Convey[" macros have two drawbacks:
+
+    *   They all have the same format.
+
+    *   They all share the same "Result" element.
+
+        The syntax and usage of *Item_<int>* elements is important and
+        extensive enough warrant it's own section. See *Item Configuration
+        Hash Structures* below.
+
+    *
+    Select => 'One' --or-- 'Many'
+
+    *
+
+    * The *Select* element determines whether this particular Menu layer
+      allows the selection of multiple items - or a single item. The default
+      is 'One'.
+
+         Select => 'Many',
+
+    *
+    Banner => 'Char String consisting of ASCII Characters'
+
+    *
+
+    * The *Banner* element provides a customized descriptive header to the
+      Menu. *$Banner* is an optional element - giving instructions,
+      descriptions, etc. The default is "Please Pick an Item:"
+
+         Banner => "The following items are for selection,\n".
+                   "\tEnjoy the Experience!",
+             
+   Item Congfiguration Hash Structures
+    Each Menu Item can have an independant configurtion. Each Menu
+    Configuration Hash Structure consists of elements that define and
+    control it's behavior, appearance, constitution and purpose. An
+    element's syntax is as you would expect it to be in perl - a key string
+    pointing to an assocaited value: key => value. The following items list
+    supported key names and ther associated value types:
+
+    *   Text => 'Char String consisting of ASCII Characters'
+
+    *
+
+        * The *Text* element provides a customized descriptive string for
+          the Item. It is the text the user will see displayed, describing
+          the selection.
+
+             Text => 'This is Item_1',
+
+    *   Convey => [ List ] --or-- @List --or-- $Scalar --or-- 'ASCII String'
+
+    *
+
+        * The *Convey* element has a twofold purpose; it provides for the
+          contents of the "]Convey[" macro, and defines or contains the
+          string or result that is passed on to child menus - if any. Use of
+          this configuration element is *optional*. If "Convey" is not a
+          list, then it's value is passed onto child menus. If "Convey" *is*
+          a list, then the Item selected is passed onto the children - if
+          any. It is important to note, *when used*, that only the resulting
+          *Convey* string - *NOT* the the Item "Text" value or string, is
+          conveyed to child menus. When the "Convey" element is not used,
+          the full Item "Text" value is conveyed to the children - if any.
+          However, the full contents of the "Text" element is *returned* as
+          the *Result* of the operation when the user completes all Menu
+          activity. See the *Macro* section below for more information.
+
+             Convey => [ `ls -1` ] ,
+
+    *   Result => \%Menu_2 --or -- "&any_method()",
+
+    *
+
+        * *Result* is an *optional* element that also has two important
+          uses:
+
+        * For selecting the child menu next in the chain of operation and
+          conveyance,
+
+             Result => \%Menu_2,
+
+          --or--
+
+        * For building customized method arguements using *Menu's* built-in
+          macros.
+
+        *
+             Result => "&any_method($arg1,\"]Selected[\",\"]Previous[\")",
+
+          NOTE: *ALWAYS* be sure to surround the subroutine or method
+          calling syntax with DOUBLE QUOTES. (You can use single quotes if
+          you don't want interpolation). Quotes are necessary because you're
+          telling *Menus* - *not* Perl - what method you want invoked.
+          *Menus* won't invoke the method until after all other processing -
+          where Perl will try to invoke it the first time it encounters the
+          line during runtime - lo----ng before a user gets a chance to see
+          or do *anything*. BUT - be sure *NOT* to use quotes when assigning
+          a child menu reference to the "Result" value.
+
+          Again, *Result* is an *optional* element. The default behavior
+          when "Result" is omitted from the Item Configuration element, is
+          for the selection to be returned to the *Menu's* calling
+          script/module/app. If the "Select" element was set to 'One', then
+          that item is returned regardless of whether the Perl structure
+          receiving the output is an array or scalar. If there were multiple
+          selections - i.e., "Select" is set to 'Many' - then, depending on
+          what structure is set for receiving the output, will determine
+          whether "Menu" returns a list (i.e. - array), or *reference* to an
+          array.
+
+   Item Congfiguration Macros
+    Each Menu Item can utilize a very powerful set of configuration
+    *Macros*. These constructs principally act as purveyors of information -
+    from one *Menu* to another, from one element to another. There are
+    currently three available Macros:
+
+    *   ]Convey[
+
+    *
+
+        * "]Convey[" is used in conjunction with the *Convey* element
+          (described) earlier. It's purpose to "convey" or transport or
+          carry a list item associated with the "Convey" element - and
+          replace the "]Convey[" Macro in the "Text" element value with that
+          list item. The *Convey* mechanism utilizing the "Convey" Macro is
+          essentially an *Item multiplier*. The entire contents of the list
+          associated with the *Convey* element will be turned into it's own
+          "Item" when the Menu is displayed.
+
+             use Menus;
+
+             my %Menu_1=(
+
+                Label  => 'Menu_1',
+                Item_1 => {
+
+                   Text   => "/bin/Utility - ]Convey[",
+                   Convey => [ `ls -1 /bin` ],
+                   Result => \%Menu_2,
+
+                },
+
+                Select => 'One',
+                Banner => "\n   Choose a /bin Utility :"
+             );
+
+             my @selections=&Menu(\%Menu_1);
+             print "SELECTIONS=@selections\n";
+
+          The user sees ==>
+
+             Choose a /bin Utility :
+
+                1.        /bin Utility - arch
+                2.        /bin Utility - ash
+                3.        /bin Utility - awk
+                4.        /bin Utility - basename
+                5.        /bin Utility - bash
+                6.        /bin Utility - cat
+                7.        /bin Utility - chgrp
+                8.        /bin Utility - chmod
+                9.        /bin Utility - chown
+                10.       /bin Utility - cp
+                f.        Finish selection.
+
+             93 Total Choices
+
+             Press ENTER (or "d") to scroll downward
+
+             OR "u" to scroll upward  (Press "q" to quit)
+
+             PLEASE ENTER A NUMBER:
+
+          NOTE: "]C[" can be used as a shorthand for "]Convey[".
+
+    *   ]Previous[
+
+    *
+
+        * "]Previous[" can be used in child Menus. The "]Previous[" Macro
+          contains the *Selection* of the parent menu. Unlike the "]Convey["
+          Macro, the "]Previous[" Macro can be used in both the "Text"
+          element value, and the "Result" element values (when constructing
+          method calls):
+
+             use Menus;
+
+             my %Menu_2=(
+
+                Label  => 'Menu_2',
+                Item_1 => {
+
+                   Text   => "]Previous[ is a ]Convey[ Utility",
+                   Convey => [ 'Good','Bad' ]
+                },
+
+                Select => 'One',
+                Banner => "\n   Choose an Answer :"
+             );
+
+             my %Menu_1=(
+
+                Label  => 'Menu_1',
+                Item_1 => {
+
+                   Text   => "/bin/Utility - ]Convey[",
+                   Convey => [ `ls -1 /bin` ],
+                   Result => \%Menu_2,
+
+                },
+
+                Select => 'One',
+                Banner => "\n   Choose a /bin Utility :"
+             );
+
+             my @selections=&Menu(\%Menu_1);
+             print "SELECTIONS=@selections\n";
+
+          The user sees ==>
+
+             Choose a /bin Utility :
+
+                1.        /bin Utility - arch
+                2.        /bin Utility - ash
+                3.        /bin Utility - awk
+                4.        /bin Utility - basename
+                5.        /bin Utility - bash
+                6.        /bin Utility - cat
+                7.        /bin Utility - chgrp
+                8.        /bin Utility - chmod
+                9.        /bin Utility - chown
+                10.       /bin Utility - cp
+                f.        Finish selection.
+
+             93 Total Choices
+
+             Press ENTER (or "d") to scroll downward
+
+             OR "u" to scroll upward  (Press "q" to quit)
+
+             PLEASE ENTER A NUMBER:
+
+          --< 5 >-<ENTER>----------------------------------
+
+             Choose an Answer :
+
+                1.        bash is a Good Utility
+                2.        bash is a Bad Utility
+
+             (Press "q" to quit)
+
+             PLEASE ENTER A NUMBER:
+
+          --< 1 >-<ENTER>----------------------------------
+
+          The user sees ==>
+
+             SELECTIONS = bash is a Good Utility
+
+          NOTE: "]P[" can be used as a shorthand for "]Previous[".
+
+    *   ]Selected[
+
+    *
+
+        * "]Selected[" can only be used in a *terminal* Menu. ( *A terminal
+          Menu is the last Menu in the chain, or the last Menu the user
+          sees. It is the Menu that defines the* "Result" *element with a
+          method* "Result => &any_method()", *or does not have a* "Result"
+          *element included or defined.* ) "]Selected[" is used to pass the
+          selection of the *current* Menu to the "Result" element method of
+          the current Menu:
+
+             use Menus;  
+
+             sub selected { print "\n   SELECTED ITEM = $_[0]\n" }
+
+             my %Menu_1=(
+
+                Label  => 'Menu_1',
+                Item_1 => {
+
+                   Text   => "/bin/Utility - ]Convey[",
+                   Convey => [ `ls -1 /bin` ],
+                   Result => "&selected(]Selected[)",
+
+                },
+
+                Select => 'One',
+                Banner => "\n   Choose a /bin Utility :"
+             );
+
+             &Menu(\%Menu_1);
+
+          NOTE: "]S[" can be used as a shorthand for "]Selected[".
+
+USAGE and NAVIGATION
+    Usage of *Menus* during the runtime of a script in which it is included,
+    is simple and intuitive. Nearly everything the end user needs in terms
+    of instruction is included on-screen. The
+    script-writer/developer/programmer can also include whatever
+    instructions s/he deems necessary and/or helpful in the customizable
+    "Banner" (as described above). There is however, one important feature
+    about using Menus with sub-menus that's important to know about.
+
+   Forward  ' > ' and  Backward  ' < ' Navigation
+    When working with more than one "Menu" screen, it's valuable to know how
+    to navigate back and forth between the different "Menu" levels/layers.
+    For example, above was illustrated the output for two layers of Menus -
+    a parent and a child:
+
+        The user sees ==>
+
+           Choose a /bin Utility :
+
+              1.        /bin Utility - arch
+              2.        /bin Utility - ash
+              3.        /bin Utility - awk
+              4.        /bin Utility - basename
+              5.        /bin Utility - bash
+              6.        /bin Utility - cat
+              7.        /bin Utility - chgrp
+              8.        /bin Utility - chmod
+              9.        /bin Utility - chown
+              10.       /bin Utility - cp
+              f.        Finish selection.
+
+           93 Total Choices
+
+           Press ENTER (or "d") to scroll downward
+
+           OR "u" to scroll upward  (Press "q" to quit)
+
+           PLEASE ENTER A NUMBER:
+
+        --< 5 >-<ENTER>----------------------------------
+
+        The user sees ==>
+
+           Choose an Answer :
+
+              1.        bash is a Good Utility
+              2.        bash is a Bad Utility
+
+           (Press "q" to quit)
+
+           PLEASE ENTER A NUMBER:
+
+    In the above example, suppose that the user "fat-fingered" his/her
+    choice, and really didn't want to "bash" bash, but wanted to bash awk
+    instead. Is restarting the whole script/application now necessary?
+    Suppose it was a process that had run overnight, and the user is seeing
+    this Menu through fogged glasses from the steam rising out of their
+    morning coffee? Having to run the whole job again would not be welcome
+    news for the BOSS. THANKFULLY, navigation makes this situation
+    avoidable. All the user would have to do is type ' < ' to go backward to
+    the previous Menu, and ' > ' to go forward to the next Menu (assuming
+    there is one in each case):
+
+    The user sees ==>
+
+       Choose an Answer :
+
+          1.        bash is a Good Utility
+          2.        bash is a Bad Utility
+
+       (Press "q" to quit)
+
+       PLEASE ENTER A NUMBER:
+
+     --<  >  >-<ENTER>-----------------------------
+
+    The user sees ==>
+
+       Choose a /bin Utility :
+
+          1.        /bin Utility - arch
+          2.        /bin Utility - ash
+          3.        /bin Utility - awk
+          4.        /bin Utility - basename
+       -  5.        /bin Utility - bash
+          6.        /bin Utility - cat
+          7.        /bin Utility - chgrp
+          8.        /bin Utility - chmod
+          9.        /bin Utility - chown
+          10.       /bin Utility - cp
+          f.        Finish selection.
+
+       93 Total Choices
+
+       Press ENTER (or "d") to scroll downward
+
+       OR "u" to scroll upward  (Press "q" to quit)
+
+       PLEASE ENTER A NUMBER:
+
+    Note in the above example the Dash ' - ' in front of item 5. This
+    informs the user that s/he had previously selected this item. To clear
+    the selection, the user would simply choose item 5 again. This
+    effectively deletes the previous choice and restores the Menu for a new
+    selection. If the user was satisfied with the choice, and was simply
+    double checking thier selection, they simply repeat the navigation
+    process by typing ' > ' - then <ENTER> - and returning to the child Menu
+    they left.
+
+    If the child Menu was a *multiple-selection* Menu, and the user had made
+    some selections before navigating back to the parent Menu, the user
+    would see a ' + ' rather than a ' - '. This informs the user that
+    selections were made in the child Menu.
+
+       Choose a /bin Utility :
+
+          1.        /bin Utility - arch
+          2.        /bin Utility - ash
+          3.        /bin Utility - awk
+          4.        /bin Utility - basename
+       +  5.        /bin Utility - bash
+          6.        /bin Utility - cat
+          7.        /bin Utility - chgrp
+          8.        /bin Utility - chmod
+          9.        /bin Utility - chown
+          10.       /bin Utility - cp
+          f.        Finish selection.
+
+       93 Total Choices
+
+       Press ENTER (or "d") to scroll downward
+
+       OR "u" to scroll upward  (Press "q" to quit)
+
+       PLEASE ENTER A NUMBER:
+
+EXAMPLES
+AUTHOR
+    Brian M. Kelly <Brian.Kelly@fullautosoftware.net>
+
+COPYRIGHT
+    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 by Brian M. Kelly. All
+    rights reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License.
+    (http://www.opensource.org/licenses/gpl-license.php).
+
