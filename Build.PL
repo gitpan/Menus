@@ -21,7 +21,6 @@ Module::Build->new(
             },
    dist_author => "Brian Kelly <Brian.Kelly\@fullautosoftware.net>",
    sign => 1,
-   create_makefile_pl => 'passthrough',
    create_readme => 1,
    create_packlist => 1,
 )->create_build_script;

@@ -1,6 +1,6 @@
 ---
 name: Menus
-version: 1.01
+version: 1.02
 author:
   - Brian Kelly <Brian.Kelly@fullautosoftware.net>
 abstract: Create Powerful CMD Enviroment Menus
@@ -10,5 +10,5 @@ requires:
 provides:
   Menus:
     file: lib/Menus.pm
-    version: 1.01
+    version: 1.02
 generated_by: Module::Build version 0.261

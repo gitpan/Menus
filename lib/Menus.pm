@@ -21,7 +21,7 @@ use vars qw(@EXPORT);
 ## Module import.
 use Exporter ();
 our @ISA = qw(Exporter);
-$VERSION = 1.01;
+$VERSION = 1.02;
 
 BEGIN {
    our $menu_cfg_file='';
