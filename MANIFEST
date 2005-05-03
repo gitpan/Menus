@@ -1,6 +1,7 @@
 Build.PL
 lib/Menus.pm
 MANIFEST
+ChangeLog
 README
 META.yml
 LICENSE

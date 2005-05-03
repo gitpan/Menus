@@ -7,16 +7,16 @@ if (1) {
       
       require ExtUtils::MakeMaker;
       my $yn = ExtUtils::MakeMaker::prompt
-	('  Install Module::Build now from CPAN?', 'y');
+	('  Install Module::Build now from CPAN?', 'y|n');
       
       unless ($yn =~ /^y/i) {
         move "Build.PL", "Build.TMP";
         move "MANIFEST", "MANIFEST.TMP";
         open (RH,"<MANIFEST.TMP");
         open (WH,">MANIFEST");
-        while (<FH>) {
+        while (<RH>) {
            print WH $_ if !/Build.PL/;
-        } close WH;
+        };
         WriteMakefile(
            NAME          => 'Menus',
            VERSION_FROM  => 'lib/Menus.pm',
@@ -25,6 +25,18 @@ if (1) {
         );
         move "Build.TMP", "Build.PL";
         move "MANIFEST.TMP", "MANIFEST";
+        move "Makefile", "Makefile.TMP";
+        open (RH,"<Makefile.TMP");
+        open (WH,">Makefile");
+        while (<RH>) {
+           if (/^all\s*::/) {
+              chomp($_);
+              print WH "$_ manifypods\n";
+           } else {
+              print WH $_;
+           }
+        } close WH;close FH;unlink 'Makefile.TMP';
+        
 	#die " *** Cannot install without Module::Build.  Exiting ...\n";
         exit;
       } else {

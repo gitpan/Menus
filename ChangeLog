@@ -1,0 +1,7 @@
+2005-05-02  Brian M. Kelly  <Brian.Kelly@fullautosoftware.com>
+
+        * Version 1.03 released.
+
+        * Modified Makefile.PL to properly make manpages.
+
+        * Added ChangeLog, updated MANIFEST.
